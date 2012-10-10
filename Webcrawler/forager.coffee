@@ -10,7 +10,7 @@ class Forager extends EventEmitter
     @userAgent = ""
     @maxOpenRequests = 25
     @queue = new ForagerQueue()
-    @interval = 50
+    @interval = 500
     @supportedContentTypes = [/^text\//i, /^application\/(rss)?[\+\/\-]?xml/i, /^application\/javascript/i, /^xml/i]
     forager = this
   # PUBLIC METHODS
@@ -22,14 +22,16 @@ class Forager extends EventEmitter
     clearInterval @intervalID  if @intervalID
 
   forage: ->
-    if forager.queue.awaitSize() > 0
-      newLinks = forager.queue.getAwaiting()
-    for newLink of newLinks
-      forager.queue.setCompleted newLink
-      linkRequest newLink
+    if openRequests.length < forager.maxOpenRequests
+      if forager.queue.awaitSize() > 0
+        newLinks = forager.queue.getAwaiting forager.maxOpenRequests-openRequests.length        
+      newLinks.forEach (newLink) ->
+        linkRequest newLink
+    else
+      console.log 'waiting for requests to finish'
   
   #PRIVATE vars  
-  openRequests = 0
+  openRequests = []
   
 
   # PRIVATE METHODS
@@ -72,9 +74,13 @@ class Forager extends EventEmitter
   #the link string passed to this function should be cleaned already
   linkRequest = (link, scan) ->
 
+    finishedRequest = ->      
+      forager.queue.setCompleted link
+      openRequests.splice openRequests.indexOf link, 1
+
     #this function just adds all the links from source text to the queue to be processed
     queueFromSource = (link, source) ->
-      newLinks = cleanLinks(link, getRoughLinks(source))
+      newLinks = cleanLinks link, getRoughLinks(source)
       for nLink of newLinks
         forager.queue.add nLink
 
@@ -86,8 +92,8 @@ class Forager extends EventEmitter
       #also 304 is special because it is not truly a redirect
       #304 means that the resource should be cached... but I dont have the time to write a cache right now
       if (res.statusCode >= 200 and res.statusCode < 300) or res.statusCode is 304
-        forager.emit "response_success", link, res.statusCode, res.headers
-        tmpArray = URL.host.split(".")
+        forager.emit "response_success", link, res.statusCode, res.headers if not scan
+        tmpArray = URL.host.split "."
         urlRootHost = tmpArray[tmpArray.length - 2] + "." + tmpArray[tmpArray.length - 1]
         if contentTypeSupported(contentType) and urlRootHost is forager.startURL.host
           if scan
@@ -100,11 +106,12 @@ class Forager extends EventEmitter
               forager.emit "response_downloaded", link, source              
               #get all the links from the source and add them to the queue
               queueFromSource link, source
-              openRequests--
+              #the link has been scaned
+              finishedRequest()
           else
             linkRequest link, true
         else
-          openRequests--
+          finishedRequest()
       
       #if status code is 300s(redirects)(NOT including 304) direguard the page data and add redirect target to the queue
       #also make sure that there is a target otherwise this is a bad link because it redirects to nowhere
@@ -112,17 +119,19 @@ class Forager extends EventEmitter
         redirectURL = url.resolve(link, res.headers.location)
         forager.queue.add redirectURL
         forager.emit "response_redirect", link, redirectURL, res.statusCode, res.headers
-        openRequests--
+        finishedRequest()
       
       #if the res gets this far its something above 400 which is an error
       else
         forager.emit "response_error", link, res.statusCode, res.headers
-        openRequests--    
+        finishedRequest()   
     #something went wrong with the request
     processError = (err) ->
       forager.emit "request_error", link, err
-      openRequests--
+      request.abort() if request
+      finishedRequest()
 
+    openRequests.push link if not scan
     request = null
     URL = url.parse(link)
     requestOptions =
@@ -140,9 +149,12 @@ class Forager extends EventEmitter
     else if URL.protocol is "https:"
       request = https.get requestOptions, processResponse
     if request
+      request.setTimeout 4000, ->
+        processError 'timedOut'
+      request.setNoDelay true
       forager.emit "request_started", link
       request.on "error", processError
     else 
-      forager.emit "request_error", link, 'unkown'
+      processError 'Unsuported protocol'
 
 exports.Forager = Forager

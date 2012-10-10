@@ -58,12 +58,15 @@
       return size;
     };
 
-    ForagerQueue.prototype.getAwaiting = function() {
+    ForagerQueue.prototype.getAwaiting = function(num) {
       var awaiting, key;
-      awaiting = {};
+      if (!num) {
+        num = Number.MAX_VALUE;
+      }
+      awaiting = [];
       for (key in this.hashMap) {
-        if (this.hashMap[key] === false) {
-          awaiting[key] = false;
+        if (!this.hashMap[key] && awaiting.length < num) {
+          awaiting.push(key);
         }
       }
       return awaiting;

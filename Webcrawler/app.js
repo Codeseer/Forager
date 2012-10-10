@@ -28,8 +28,12 @@
 
   forager.on("request_error", function(link, err) {
     errors++;
-    console.log("ERR  " + link);
+    console.log("ERR " + err + '  ' + link);
     return log.write(errors + " - ERR  " + link + "\r\n");
+  });
+
+  forager.on("response_success", function(link, status, headers) {
+    return console.log(status + '  ' + link);
   });
 
   forager.on("complete", function() {

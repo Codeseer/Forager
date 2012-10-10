@@ -1,22 +1,6 @@
 url = require "url"
 EventEmitter = require("events").EventEmitter
 
-mongoose = require "mongoose"
-Schema = mongoose.Schema
-ObjectId = Schema.ObjectId
-
-QueueItemSchema = new Schema
-  scanID:
-    type: ObjectId
-  url:
-    type: String
-  links:
-    type: [ObjectId]
-  status:
-    type: Number
-    default: -1
-
-QueueItem = mongoose.model 'QueueItem', QueueItemSchema
 
 #make a queue that holds all the urls
 class ForagerQueue extends EventEmitter  
@@ -38,7 +22,7 @@ class ForagerQueue extends EventEmitter
   #this method will return true if the url has been checked
   #false if the url has not been checked
   #or it will return an undefined object if the key does not exits
-  checkCompleted: (urlString) ->
+  checkCompleted: (urlString) -> 
     @hashMap[urlString]
 
   setCompleted: (urlString) ->
@@ -64,11 +48,11 @@ class ForagerQueue extends EventEmitter
 
   #this is how we give the crawler stuff to crawl
   #gets the first key that has not been checked and returns it
-  #if not more keys are left it returns null
-  getAwaiting: ->
-    awaiting = {}
+  getAwaiting: (num)->
+    num = Number.MAX_VALUE if !num
+    awaiting = []
     for key of @hashMap
-      awaiting[key] = false  if @hashMap[key] is false
+      awaiting.push key if !@hashMap[key] and awaiting.length < num
     awaiting
 
 #allows other javascript files see the ForagerQueue Class

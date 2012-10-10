@@ -16,8 +16,11 @@ forager.on "response_error", (link, status, headers) ->
 
 forager.on "request_error", (link, err) ->
   errors++
-  console.log "ERR  " + link
+  console.log "ERR "+err+'  '+ link
   log.write errors + " - ERR  " + link + "\r\n"
+
+forager.on "response_success", (link, status, headers) ->
+  console.log status+'  '+link
 
 forager.on "complete", ->
   console.log "forager complete"

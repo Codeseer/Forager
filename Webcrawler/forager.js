@@ -23,9 +23,9 @@
 
     function Forager() {
       this.userAgent = "";
-      this.maxOpenRequests = 25;
+      this.maxOpenRequests = 10;
       this.queue = new ForagerQueue();
-      this.interval = 50;
+      this.interval = 500;
       this.supportedContentTypes = [/^text\//i, /^application\/(rss)?[\+\/\-]?xml/i, /^application\/javascript/i, /^xml/i];
       forager = this;
     }
@@ -43,19 +43,20 @@
     };
 
     Forager.prototype.forage = function() {
-      var newLink, newLinks, _results;
-      if (forager.queue.awaitSize() > 0) {
-        newLinks = forager.queue.getAwaiting();
+      var newLinks;
+      if (openRequests.length < forager.maxOpenRequests) {
+        if (forager.queue.awaitSize() > 0) {
+          newLinks = forager.queue.getAwaiting(forager.maxOpenRequests - openRequests.length);
+        }
+        return newLinks.forEach(function(newLink) {
+          return linkRequest(newLink);
+        });
+      } else {
+        return console.log('waiting for requests to finish');
       }
-      _results = [];
-      for (newLink in newLinks) {
-        forager.queue.setCompleted(newLink);
-        _results.push(linkRequest(newLink));
-      }
-      return _results;
     };
 
-    openRequests = 0;
+    openRequests = [];
 
     getRoughLinks = function(sourceString) {
       var links, linksMatch;
@@ -98,8 +99,12 @@
       return supported;
     };
 
-    linkRequest = function(link, scan) {
-      var URL, processError, processResponse, queueFromSource, request, requestOptions;
+    linkRequest = function(link, scan, retries) {
+      var URL, finishedRequest, processError, processResponse, queueFromSource, request, requestOptions;
+      finishedRequest = function() {
+        forager.queue.setCompleted(link);
+        return openRequests.splice(openRequests.indexOf(link, 1));
+      };
       queueFromSource = function(link, source) {
         var nLink, newLinks, _results;
         newLinks = cleanLinks(link, getRoughLinks(source));
@@ -113,7 +118,9 @@
         var contentType, redirectURL, source, tmpArray, urlRootHost;
         contentType = res.headers["content-type"];
         if ((res.statusCode >= 200 && res.statusCode < 300) || res.statusCode === 304) {
-          forager.emit("response_success", link, res.statusCode, res.headers);
+          if (!scan) {
+            forager.emit("response_success", link, res.statusCode, res.headers);
+          }
           tmpArray = URL.host.split(".");
           urlRootHost = tmpArray[tmpArray.length - 2] + "." + tmpArray[tmpArray.length - 1];
           if (contentTypeSupported(contentType) && urlRootHost === forager.startURL.host) {
@@ -126,28 +133,34 @@
               return res.on("end", function() {
                 forager.emit("response_downloaded", link, source);
                 queueFromSource(link, source);
-                return openRequests--;
+                return finishedRequest();
               });
             } else {
               return linkRequest(link, true);
             }
           } else {
-            return openRequests--;
+            return finishedRequest();
           }
         } else if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           redirectURL = url.resolve(link, res.headers.location);
           forager.queue.add(redirectURL);
           forager.emit("response_redirect", link, redirectURL, res.statusCode, res.headers);
-          return openRequests--;
+          return finishedRequest();
         } else {
           forager.emit("response_error", link, res.statusCode, res.headers);
-          return openRequests--;
+          return finishedRequest();
         }
       };
       processError = function(err) {
         forager.emit("request_error", link, err);
-        return openRequests--;
+        if (request) {
+          request.abort();
+        }
+        return finishedRequest();
       };
+      if (!scan) {
+        openRequests.push(link);
+      }
       request = null;
       URL = url.parse(link);
       requestOptions = {
@@ -168,10 +181,14 @@
         request = https.get(requestOptions, processResponse);
       }
       if (request) {
+        request.setTimeout(5000, function() {
+          return processError('timedOut');
+        });
+        request.setNoDelay(true);
         forager.emit("request_started", link);
         return request.on("error", processError);
       } else {
-        return forager.emit("request_error", link, 'unkown');
+        return processError('Unsuported protocol');
       }
     };
 
