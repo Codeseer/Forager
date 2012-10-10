@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Forager</title>
+@Styles.Render("~/Content/member_style.css")
+@Scripts.Render("~/bundles/jquery")
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript"> 
+<!--
+$(document).ready(function(){
+	$("#record").hover(function(){
+		$(this).attr("src","images/records2.png");
+	},function(){
+		$(this).attr("src","images/records.png");
+	});
+	
+	$("#priority").hover(function(){
+		$(this).attr("src","images/set-priorities2.png");
+	},function(){
+		$(this).attr("src","images/set-priorities.png");
+	});
+	
+	$("#hierachy").hover(function(){
+		$(this).attr("src","images/hierachy2.png");
+	},function(){
+		$(this).attr("src","images/hierachy.png");
+	});
+	
+	$("#nondomain").hover(function(){
+		$(this).attr("src","images/non-domain2.png");
+	},function(){
+		$(this).attr("src","images/non-domain.png");
+	});
+	
+	$("#error").hover(function(){
+		$(this).attr("src","images/error2.png");
+	},function(){
+		$(this).attr("src","images/error.png");
+	});
+	
+	$("#ssl").hover(function(){
+		$(this).attr("src","images/ssl2.png");
+	},function(){
+		$(this).attr("src","images/ssl.png");
+	});
+	
+	$("#face").hover(function(){
+		$(this).attr("src","images/face2.png");
+	},function(){
+		$(this).attr("src","images/face1.png");
+	});
+});
+
+//-->
+</script>
+
+
+</head>
+<body>
+<a href="member"><img src="images/logo.png" id="logo"></a>
+
+<div id="logout" align="right">
+	Welcome, sample! <a href="#">Logout</a>
+</div>
+
+<div id="content">
+<a href="errors"><img src="images/error.png" id="error"></a>
+<a href="priority"><img src="images/set-priorities.png" id="priority"></a>
+<a href="non_domain"><img src="images/non-domain.png" id="nondomain"></a>
+<a href="hierachy"><img src="images/hierachy.png" id="hierachy"></a>
+<a href="records"><img src="images/records.png" id="record"></a>
+<a href="ssl"><img src="images/ssl.png" id="ssl"></a>
+<img src="images/face1.png" id="face">
+</div>
+
+</body>
+</html>

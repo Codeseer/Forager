@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>login and signup</title>
+@Styles.Render("~/Content/login_style.css")
+@Scripts.Render("~/bundles/jquery")
+</head>
+
+<body>
+<img src="Content/images/logo.png" id="logo">
+<img id="facepos" src="images/face1.png">
+<img id="login" src="images/login.png">
+
+<form id='loginform' action=''> 
+<table>
+	<tr>
+		<td >
+			Username: <input type="text" name="username" style="height:35px; width:250px; font-size: 20px;" />
+		</td>
+	<tr>
+	<tr>
+		<td>
+			Password: <input type="password" name="password" style="height:35px; width:250px; font-size:20px;" />
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<input type='submit' name='Submit' value='Sign in' style="height:35px; float: right; font-family:'Arial'; font-size:18x;"/>
+		</td>
+	</tr>
+</table>
+</form> 
+</body>
+</html>

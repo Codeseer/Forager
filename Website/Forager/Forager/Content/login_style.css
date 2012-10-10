@@ -1,0 +1,31 @@
+body {
+background-image:url('images/index-background2.png');
+background-repeat:repeat;
+}
+
+#logo{
+	position:fixed;
+	top:10px;
+	left:10px;
+}
+
+#loginform{
+	position:fixed;
+	font-family:"Arial";
+	top:300px;
+	left:630px;
+	
+	
+}
+
+#facepos{
+	position:fixed;
+	top:365px;
+	left:300px;
+}
+
+#login{
+	position:fixed;
+	top:180px;
+	left:560px;
+}

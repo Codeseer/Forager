@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Non-SPSU domain</title>
+@Styles.Render("~/Content/menu.css")
+@Scripts.Render("~/bundles/jquery")
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="application/javascript">
+<!--
+$(document).ready(function(){
+	$("#menu-error").hover(function(){
+		$(this).attr("src","images/menu-error2.png");
+	},function(){
+		$(this).attr("src","images/menu-error.png");
+	});
+	
+	$("#menu-priorities").hover(function(){
+		$(this).attr("src","images/menu-priorities2.png");
+	},function(){
+		$(this).attr("src","images/menu-priorities.png");
+	});
+	
+	$("#menu-ssl").hover(function(){
+		$(this).attr("src","images/menu-ssl2.png");
+	},function(){
+		$(this).attr("src","images/menu-ssl.png");
+	});
+	
+	$("#menu-hierachy").hover(function(){
+		$(this).attr("src","images/menu-hierachy2.png");
+	},function(){
+		$(this).attr("src","images/menu-hierachy.png");
+	});
+	
+	$("#menu-records").hover(function(){
+		$(this).attr("src","images/menu-records2.png");
+	},function(){
+		$(this).attr("src","images/menu-records.png");
+	});
+});
+
+//-->
+</script>
+</head>
+
+<body>
+<div id="logout" align="right">
+	Welcome, sample! <a href="#">Logout</a>
+</div>
+<div id="head">
+<img src="images/logo.png" id="logo">
+
+<a href="member"><img src="images/menu-face.png" id="menu-face" ></a>
+<a title="Find dead links, wrong pictures/graphs, incorrect pointers." href="errors"><img src="images/menu-error.png" id="menu-error"></a>
+<img src="images/menu-non-domain2.png" id="menu-non-domain">
+<a title="Set priorities on issues." href="priority"><img src="images/menu-priorities.png" id="menu-priorities"></a>
+<a title="See links whose target protocol is https, http, or either." href="ssl"><img src="images/menu-ssl.png" id="menu-ssl"></a>
+<a title="See page links visually." href="hierachy"><img src="images/menu-hierachy.png" id="menu-hierachy"></a>
+<a title="View and print old and updated records." href="records"><img src="images/menu-records.png" id="menu-records"></a>
+</div>
+<div id="page">
+	<div id="content">
+		<h1>
+			Non-SPSU domain
+		</h1>
+		<p>
+			Body here...
+		</p>
+		<table>
+			<tr>
+				<th>ID</th>
+				<th>URL</th>
+				<th>description</th>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td><a href="#">Click here</a></td>
+				<td>some description</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td><a href="#">Click here</a></td>
+				<td>some description</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+</body>
+</html>

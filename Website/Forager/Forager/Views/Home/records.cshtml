@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Rrecords</title>
+@Styles.Render("~/Content/menu.css")
+@Scripts.Render("~/bundles/jquery")
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+<!--
+$(document).ready(function(){
+	$("#menu-non-domain").hover(function(){
+		$(this).attr("src","images/menu-non-domain2.png");
+	},function(){
+		$(this).attr("src","images/menu-non-domain.png");
+	});
+	
+	$("#menu-priorities").hover(function(){
+		$(this).attr("src","images/menu-priorities2.png");
+	},function(){
+		$(this).attr("src","images/menu-priorities.png");
+	});
+	
+	$("#menu-ssl").hover(function(){
+		$(this).attr("src","images/menu-ssl2.png");
+	},function(){
+		$(this).attr("src","images/menu-ssl.png");
+	});
+	
+	$("#menu-error").hover(function(){
+		$(this).attr("src","images/menu-error2.png");
+	},function(){
+		$(this).attr("src","images/menu-error.png");
+	});
+	
+	$("#menu-hierachy").hover(function(){
+		$(this).attr("src","images/menu-hierachy2.png");
+	},function(){
+		$(this).attr("src","images/menu-hierachy.png");
+	});
+	 
+});
+
+
+//-->
+</script>
+</head>
+
+<body>
+<div id="logout" align="right">
+	Welcome, sample! <a href="#">Logout</a>
+</div>
+<div id="head">
+<a href="member"><img src="images/logo.png" id="logo"></a>
+
+<a href="member"><img src="images/menu-face.png" id="menu-face" ></a>
+<a title="Find dead links, wrong pictures/graphs, incorrect pointers." href="errors"><img src="images/menu-error.png" id="menu-error"></a>
+<a title="See pages that lead away from the SPSU webspace." href="non_domain"><img src="images/menu-non-domain.png" id="menu-non-domain"></a>
+<a title="Set priorities on issues." href="priority"><img src="images/menu-priorities.png" id="menu-priorities"></a>
+<a title="See links whose target protocol is https, http, or either." href="ssl"><img src="images/menu-ssl.png" id="menu-ssl"></a>
+<a title="See page links visually." href="hierachy"><img src="images/menu-hierachy.png" id="menu-hierachy"></a>
+<img src="images/menu-records2.png" id="menu-records"></a>
+</div>
+<div id="page">
+	<div id="content">
+		<h1>
+			Records
+		</h1>
+		<iframe src="records_content" frameborder="0" width="550" height="700" scrolling="auto" name="content" ></iframe>	
+	</div>
+	<div>
+		<h2>
+		Categories
+		</h2>
+		<iframe src="records_menu" frameborder="0" height="300"></iframe>
+	</div>
+
+</div>
+
+</body>
+</html>
