@@ -15,7 +15,7 @@
   ObjectId = Schema.ObjectId;
 
   QueueLinkSchema = new Schema({
-    scanId: ObjectId,
+    scanId: Number,
     url: String,
     links: [String],
     status: {
@@ -27,37 +27,39 @@
   QueueLink = mongoose.model("QueueLink", QueueLinkSchema);
 
   ForagerQueue = (function(_super) {
-    var getLink;
+    var getLink, sId;
 
     __extends(ForagerQueue, _super);
 
-    function ForagerQueue(scanId) {
-      this.scanId = scanId;
+    sId = 0;
+
+    function ForagerQueue(id) {
+      sId = id;
     }
 
     getLink = function(urlString, cb) {
-      return QueueLink.findOne().where('url').equals(urlString).exec(cb);
+      return QueueLink.findOne({
+        scanId: sId
+      }).where('url').equals(urlString).exec(cb);
     };
 
-    ForagerQueue.prototype.add = function(urlString) {
-      return getLink(function(err, link) {
+    ForagerQueue.prototype.add = function(urlString, cb) {
+      return getLink(urlString, function(err, link) {
         var newLink;
         if (!link) {
           newLink = new QueueLink({
             url: urlString,
-            scanId: this.scanId
+            scanId: sId
           });
-          return newLink.save(function(err) {
-            if (!err) {
-              return this.emit("add", urlString);
-            }
-          });
+          return newLink.save(cb);
         }
       });
     };
 
     ForagerQueue.prototype.checkCompleted = function(urlString, cb) {
-      return QueueLink.where('status').ne(-1).ne(0).limit(1).exec(cb);
+      return QueueLink.findOne({
+        scanId: sId
+      }).where('status').ne(-1).ne(0).exec(cb);
     };
 
     ForagerQueue.prototype.setCompleted = function(urlString, status, pageLinks) {
@@ -76,24 +78,26 @@
     };
 
     ForagerQueue.prototype.completedSize = function(cb) {
-      return QueueLink.where('status').ne(-1).ne(0).count(cb);
+      return QueueLink.find({
+        scanId: sId
+      }).where('status').ne(-1).ne(0).count(cb);
     };
 
     ForagerQueue.prototype.awaitSize = function(cb) {
       return QueueLink.find({
-        status: -1
-      }).count(cb);
+        scanId: sId
+      }).where('status').equals(-1).count(cb);
     };
 
     ForagerQueue.prototype.getAwaiting = function(num, cb) {
       if (num) {
         return QueueLink.find({
-          status: -1
-        }).limit(num).exec(cb);
+          scanId: sId
+        }).where('status').equals(-1).limit(num).exec(cb);
       } else {
         return QueueLink.find({
-          status: -1
-        }).exec(cb);
+          scanId: sId
+        }).where('status').equals(-1).exec(cb);
       }
     };
 

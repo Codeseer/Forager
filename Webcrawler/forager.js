@@ -21,10 +21,10 @@
 
     forager = null;
 
-    function Forager() {
+    function Forager(scanId) {
       this.userAgent = "";
-      this.maxOpenRequests = 25;
-      this.queue = new ForagerQueue(1);
+      this.maxOpenRequests = 5;
+      this.queue = new ForagerQueue(scanId);
       this.interval = 500;
       this.supportedContentTypes = [/^text\//i, /^application\/(rss)?[\+\/\-]?xml/i, /^application\/javascript/i, /^xml/i];
       forager = this;
@@ -47,7 +47,12 @@
         return forager.queue.awaitSize(function(err, size) {
           return forager.queue.getAwaiting(forager.maxOpenRequests - openRequests.length, function(err, newLinks) {
             return newLinks.forEach(function(newLink) {
-              return linkRequest(newLink.url);
+              newLink.status = 0;
+              return newLink.save(function(err) {
+                if (!err) {
+                  return linkRequest(newLink.url);
+                }
+              });
             });
           });
         });
@@ -101,18 +106,17 @@
 
     linkRequest = function(link, scan) {
       var URL, finishedRequest, processError, processResponse, queueFromSource, request, requestOptions;
-      finishedRequest = function(status) {
-        forager.queue.setCompleted(link, status);
+      finishedRequest = function(status, links) {
+        forager.queue.setCompleted(link, status, links);
         return openRequests.splice(openRequests.indexOf(link, 1));
       };
-      queueFromSource = function(link, source) {
-        var nLink, newLinks, _results;
+      queueFromSource = function(link, source, status) {
+        var nLink, newLinks;
         newLinks = cleanLinks(link, getRoughLinks(source));
-        _results = [];
         for (nLink in newLinks) {
-          _results.push(forager.queue.add(nLink));
+          forager.queue.add(nLink);
         }
-        return _results;
+        return finishedRequest(status, newLinks);
       };
       processResponse = function(res) {
         var contentType, redirectURL, source, tmpArray, urlRootHost;
@@ -132,8 +136,7 @@
               });
               return res.on("end", function() {
                 forager.emit("response_downloaded", link, source);
-                queueFromSource(link, source);
-                return finishedRequest(res.statusCode);
+                return queueFromSource(link, source, res.statusCode);
               });
             } else {
               return linkRequest(link, true);
@@ -156,7 +159,7 @@
         if (request) {
           request.abort();
         }
-        return finishedRequest(res.statusCode);
+        return finishedRequest(1000);
       };
       if (!scan) {
         openRequests.push(link);

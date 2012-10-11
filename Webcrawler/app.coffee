@@ -7,7 +7,7 @@ db = mongoose.connect 'mongodb://localhost/test'
 log = fs.createWriteStream Date.now() + "_log.txt",
   flags: "a"
 
-forager = new Forager()
+forager = new Forager(123)
 forager.startURL = url.parse "http://spsu.edu"
 forager.userAgent = "SPSU FORAGER"
 

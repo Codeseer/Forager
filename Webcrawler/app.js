@@ -16,7 +16,7 @@
     flags: "a"
   });
 
-  forager = new Forager();
+  forager = new Forager(123);
 
   forager.startURL = url.parse("http://spsu.edu");
 

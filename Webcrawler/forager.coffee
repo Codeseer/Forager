@@ -6,10 +6,10 @@ ForagerQueue = require("./queue.js").ForagerQueue
 class Forager extends EventEmitter
   forager = null
   #PUBLIC vars
-  constructor: ->
+  constructor: (scanId)->
     @userAgent = ""
     @maxOpenRequests = 5
-    @queue = new ForagerQueue(1)
+    @queue = new ForagerQueue(scanId)
     @interval = 500
     @supportedContentTypes = [/^text\//i, /^application\/(rss)?[\+\/\-]?xml/i, /^application\/javascript/i, /^xml/i]
     forager = this
@@ -86,7 +86,7 @@ class Forager extends EventEmitter
       newLinks = cleanLinks link, getRoughLinks(source)
       for nLink of newLinks
         forager.queue.add nLink
-      finishedRequest(status, newLinks)
+      finishedRequest status, newLinks
 
     processResponse = (res) ->
       
@@ -109,7 +109,7 @@ class Forager extends EventEmitter
             res.on "end", ->
               forager.emit "response_downloaded", link, source              
               #get all the links from the source and add them to the queue
-              queueFromSource link, source, status
+              queueFromSource link, source, res.statusCode
               #the link has been scaned
           else
             linkRequest link, true
@@ -132,7 +132,7 @@ class Forager extends EventEmitter
     processError = (err) ->
       forager.emit "request_error", link, err
       request.abort() if request
-      finishedRequest(res.statusCode)
+      finishedRequest(1000)
 
     openRequests.push link if not scan
     request = null
