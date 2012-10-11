@@ -23,8 +23,8 @@
 
     function Forager() {
       this.userAgent = "";
-      this.maxOpenRequests = 10;
-      this.queue = new ForagerQueue();
+      this.maxOpenRequests = 25;
+      this.queue = new ForagerQueue(1);
       this.interval = 500;
       this.supportedContentTypes = [/^text\//i, /^application\/(rss)?[\+\/\-]?xml/i, /^application\/javascript/i, /^xml/i];
       forager = this;
@@ -43,13 +43,13 @@
     };
 
     Forager.prototype.forage = function() {
-      var newLinks;
       if (openRequests.length < forager.maxOpenRequests) {
-        if (forager.queue.awaitSize() > 0) {
-          newLinks = forager.queue.getAwaiting(forager.maxOpenRequests - openRequests.length);
-        }
-        return newLinks.forEach(function(newLink) {
-          return linkRequest(newLink);
+        return forager.queue.awaitSize(function(err, size) {
+          return forager.queue.getAwaiting(forager.maxOpenRequests - openRequests.length, function(err, newLinks) {
+            return newLinks.forEach(function(newLink) {
+              return linkRequest(newLink.url);
+            });
+          });
         });
       } else {
         return console.log('waiting for requests to finish');
@@ -99,10 +99,10 @@
       return supported;
     };
 
-    linkRequest = function(link, scan, retries) {
+    linkRequest = function(link, scan) {
       var URL, finishedRequest, processError, processResponse, queueFromSource, request, requestOptions;
-      finishedRequest = function() {
-        forager.queue.setCompleted(link);
+      finishedRequest = function(status) {
+        forager.queue.setCompleted(link, status);
         return openRequests.splice(openRequests.indexOf(link, 1));
       };
       queueFromSource = function(link, source) {
@@ -133,22 +133,22 @@
               return res.on("end", function() {
                 forager.emit("response_downloaded", link, source);
                 queueFromSource(link, source);
-                return finishedRequest();
+                return finishedRequest(res.statusCode);
               });
             } else {
               return linkRequest(link, true);
             }
           } else {
-            return finishedRequest();
+            return finishedRequest(res.statusCode);
           }
         } else if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           redirectURL = url.resolve(link, res.headers.location);
           forager.queue.add(redirectURL);
           forager.emit("response_redirect", link, redirectURL, res.statusCode, res.headers);
-          return finishedRequest();
+          return finishedRequest(res.statusCode);
         } else {
           forager.emit("response_error", link, res.statusCode, res.headers);
-          return finishedRequest();
+          return finishedRequest(res.statusCode);
         }
       };
       processError = function(err) {
@@ -156,7 +156,7 @@
         if (request) {
           request.abort();
         }
-        return finishedRequest();
+        return finishedRequest(res.statusCode);
       };
       if (!scan) {
         openRequests.push(link);
@@ -181,7 +181,7 @@
         request = https.get(requestOptions, processResponse);
       }
       if (request) {
-        request.setTimeout(5000, function() {
+        request.setTimeout(4000, function() {
           return processError('timedOut');
         });
         request.setNoDelay(true);

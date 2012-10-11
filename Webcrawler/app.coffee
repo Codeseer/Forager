@@ -1,12 +1,16 @@
 Forager = require("./forager.js").Forager
 url = require "url"
 fs = require "fs"
+mongoose = require 'mongoose'
+db = mongoose.connect 'mongodb://localhost/test'
+
 log = fs.createWriteStream Date.now() + "_log.txt",
   flags: "a"
 
 forager = new Forager()
 forager.startURL = url.parse "http://spsu.edu"
 forager.userAgent = "SPSU FORAGER"
+
 errors = 0
 
 forager.on "response_error", (link, status, headers) ->
