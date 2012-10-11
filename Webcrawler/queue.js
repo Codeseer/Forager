@@ -68,7 +68,7 @@
         link.links = pageLinks;
         return link.save(function(err) {
           if (err) {
-            Console.log('could not save ' + urlString);
+            console.log('could not save ' + urlString);
           }
           if (!err) {
             return this.emit("complete", urlString);

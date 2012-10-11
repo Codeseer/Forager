@@ -47,7 +47,7 @@ class ForagerQueue extends EventEmitter
       link.status = status
       link.links = pageLinks
       link.save (err) ->
-        Console.log 'could not save '+urlString if err
+        console.log 'could not save '+urlString if err
         @emit "complete", urlString unless err
 
   #returns the number of urls that have been checked.
